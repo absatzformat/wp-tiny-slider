@@ -12,122 +12,69 @@ namespace Absatzformat\Wordpress\ContentSlider;
 
 defined('WPINC') or die();
 
-define(__NAMESPACE__.'\PLUGIN_VERSION', '1.0.0');
-define(__NAMESPACE__.'\PLUGIN_PATH', plugin_dir_path(__FILE__));
-define(__NAMESPACE__.'\PLUGIN_URL', plugin_dir_url(__FILE__));
-define(__NAMESPACE__.'\PLUGIN_SLUG', pathinfo(__FILE__, PATHINFO_FILENAME));
-define(__NAMESPACE__.'\MENU_SLUG', PLUGIN_SLUG);
+define(__NAMESPACE__.'\PLUGIN_VERSION',	'1.0.0');
+define(__NAMESPACE__.'\PLUGIN_PATH',	plugin_dir_path(__FILE__));
+define(__NAMESPACE__.'\PLUGIN_URL',		plugin_dir_url(__FILE__));
+define(__NAMESPACE__.'\PLUGIN_SLUG',	pathinfo(__FILE__, PATHINFO_FILENAME));
+define(__NAMESPACE__.'\MENU_SLUG',		PLUGIN_SLUG);
 
 
 final class ContentSlider{
 
 	private static $instance = null;
 
-	private const DEFAULT_OPTIONS = [
-		'mode' =>							'carousel',
-		'axis' => 							'horizontal',
-		'items' =>							1,
-		'gutter' => 						0,
-		'edge_padding' => 					0,
-		'fixed_width' => 					false,
-		'auto_width' => 					false,
-		'viewport_max' => 					false,
-		'slide_by' => 						1,
-		'center' => 						false,
-		'controls' => 						true,
-		'controls_position' => 				'top',
-		'controls_text' => '				prev|next',
-		'controls_container' => 			false,
-		'prev_button' => 					false,
-		'next_button' => 					false,
-		'nav' => 							true,
-		'nav_position' => 					'top',
-		'nav_container' => 					false,
-		'nav_as_thumbnails' => 				false,
-		'arrow_keys' => 					false,
-		'speed' => 							300,
-		'autoplay' => 						false,
-		'autoplay_position' => 				'top',
-		'autoplay_timeout' => 				5000,
-		'autoplay_direction' => 			'forward',
-		'autoplay_text' => 					'start|stop',
-		'autoplay_hoverPause' =>			false,
-		'autoplay_button' => 				false,
-		'autoplay_buttonOutput' => 			true,
-		'autoplay_reset_on_visibility' =>	 true,
-		'animate_in' => 					'tns-fadeIn',
-		'animate_out' => 					'tns-fadeOut',
-		'animate_normal' =>		 			'tns-normal',
-		'animate_delay' =>					false,
-		'loop' => 							true,
-		'rewind' =>							false,
-		'auto_height' => 					false,
-		'responsive' => 					false,
-		'lazyload' => 						false,
-		'lazyload_selector' => 				'.tns-lazy-img',
-		'touch' => 							true,
-		'mouse_drag' => 					false,
-		'swipe_angle' =>		 			15,
-		'nested' =>				 			false,
-		'prevent_action_when_running' => 	false,
-		'prevent_scroll_on_touch' => 		false,
-		'freezable' => 						true,
-		'use_local_storage' => 				true,
-		'nonce' => 							false
-	];
-
+	// shortcode attr => [js key, default value]
 	private const OPTIONS_MAPPING = [
-
-		'mode' => 'mode',
-		'axis' => 'axis',
-		'items' => 'items',
-		'gutter' => 'gutter',
-		'edge_padding' => 'edgePadding',
-		'fixed_width' => 'fixedWidth',
-		'auto_width' => 'autoWidth',
-		'viewport_max' => 'viewportMax',
-		'slide_by' => 'slideBy',
-		'center' => 'center',
-		'controls' => 'controls',
-		'controls_position' => 'controlsPosition',
-		'controls_text' => 'controlsText',
-		'controls_container' => 'controlsContainer',
-		'prev_button' => 'prevButton',
-		'next_button' => 'nextButton',
-		'nav' => 'nav',
-		'nav_position' => 'navPosition',
-		'nav_container' => 'navContainer',
-		'nav_as_thumbnails' => 'navAsThumbnails',
-		'arrow_keys' => 'arrowKeys',
-		'speed' => 'speed',
-		'autoplay' => 'autoplay',
-		'autoplay_position' => 'autoplayPosition',
-		'autoplay_timeout' => 'autoplayTimeout',
-		'autoplay_direction' => 'autoplayDirection',
-		'autoplay_text' => 'autoplayText',
-		'autoplay_hover_pause' => 'autoplayHoverPause',
-		'autoplay_button' => 'autoplayButton',
-		'autoplay_button_output' => 'autoplayButtonOutput',
-		'autoplay_reset_on_visibility' => 'autoplayResetOnVisibility',
-		'animate_in' => 'animateIn',
-		'animate_out' => 'animateOut',
-		'animate_normal' => 'animateNormal',
-		'animate_delay' => 'animateDelay',
-		'loop' => 'loop',
-		'rewind' => 'rewind',
-		'auto_height' => 'autoHeight',
-		'responsive' => 'responsive',
-		'lazyload' => 'lazyload',
-		'lazyload_selector' => 'lazyloadSelector',
-		'touch' => 'touch',
-		'mouse_drag' => 'mouseDrag',
-		'swipe_angle' => 'swipeAngle',
-		'nested' => 'nested',
-		'prevent_action_when_running' => 'preventActionWhenRunning',
-		'prevent_scroll_on_touch' => 'preventScrollOnTouch',
-		'freezable' => 'freezable',
-		'use_local_storage' => 'useLocalStorage',
-		'nonce' => 'nonce',
+		'mode' =>							['mode',						'carousel'],
+		'axis' => 							['axis',						'horizontal'],
+		'items' =>							['items',						1],
+		'gutter' => 						['gutter',						0],
+		'edge_padding' => 					['edgePadding',					0],
+		'fixed_width' => 					['fixedWidth',					false],
+		'auto_width' => 					['autoWidth',					false],
+		'viewport_max' => 					['viewportMax',					false],
+		'slide_by' => 						['slideBy',						1], // or 'page'
+		'center' => 						['center',						false],
+		'controls' => 						['controls',					true],
+		'controls_position' => 				['controlsPosition',			'top'],
+		'controls_text' =>					['controlsText',				'prev|next'], // js val array
+		'controls_container' => 			['controlsContainer',			false],
+		'prev_button' => 					['prevButton',					false],
+		'next_button' => 					['nextButton',					false],
+		'nav' => 							['nav',							true],
+		'nav_position' => 					['navPosition',					'top'],
+		'nav_container' => 					['navContainer',				false],
+		'nav_as_thumbnails' => 				['navAsThumbnails',				false],
+		'arrow_keys' => 					['arrowKeys',					false],
+		'speed' => 							['speed',						300],
+		'autoplay' => 						['autoplay',					false],
+		'autoplay_position' => 				['autoplayPosition',			'top'],
+		'autoplay_timeout' => 				['autoplayTimeout',				5000],
+		'autoplay_direction' => 			['autoplayDirection',			'forward'],
+		'autoplay_text' => 					['autoplayText',				'start|stop'], // js val array
+		'autoplay_hover_pause' =>			['autoplayHoverPause',			false],
+		'autoplay_button' => 				['autoplayButton',				false],
+		'autoplay_button_output' => 		['autoplayButtonOutput',		true],
+		'autoplay_reset_on_visibility' =>	['autoplayResetOnVisibility',	true],
+		'animate_in' => 					['animateIn',					'tns-fadeIn'],
+		'animate_out' => 					['animateOut',					'tns-fadeOut'],
+		'animate_normal' =>		 			['animateNormal',				'tns-normal'],
+		'animate_delay' =>					['animateDelay',				false],
+		'loop' => 							['loop',						true],
+		'rewind' =>							['rewind',						false],
+		'auto_height' => 					['autoHeight',					false],
+		'responsive' => 					['responsive',					false],
+		'lazyload' => 						['lazyload',					false],
+		'lazyload_selector' => 				['lazyloadSelector',			'.tns-lazy-img'],
+		'touch' => 							['touch',						true],
+		'mouse_drag' => 					['mouseDrag',					false],
+		'swipe_angle' =>		 			['swipeAngle',					15],
+		'nested' =>				 			['nested',						false],
+		'prevent_action_when_running' => 	['preventActionWhenRunning',	false],
+		'prevent_scroll_on_touch' => 		['preventScrollOnTouch',		false],
+		'freezable' => 						['freezable',					true],
+		'use_local_storage' => 				['useLocalLtorage',				true],
+		'nonce' => 							['nonce',						false]
 	];
 
 	public static function getInstance(){
@@ -151,41 +98,56 @@ final class ContentSlider{
 		add_shortcode('af-content-slider', [$this, 'handleShortcode']);
 	}
 
+	private static function getDefaultOptions(){
+		return array_map(function($mapping){
+			return $mapping[1];
+		}, self::OPTIONS_MAPPING);
+	}
+
+	private static function mapJsOptions($options){
+
+		$mappedOptions = [];
+		foreach(self::OPTIONS_MAPPING as $key => $mapping){
+
+			$val = $options[$key];
+
+			// lazy casting
+			if($val === 'true' || $val === 'false'){
+				$val = $val === 'true';
+			}
+			else if(is_numeric($val)){
+				$val = floatval($val);
+			}
+
+			$mappedOptions[$mapping[0]] = $val;
+		}
+		
+		// handle array options
+		$mappedOptions['controlsText'] = explode('|', trim($mappedOptions['controlsText']));
+		$mappedOptions['autoplayText'] = explode('|', trim($mappedOptions['autoplayText']));
+
+		return $mappedOptions;
+	}
+
 	public function handleShortcode($attrs = [], $content = null){
 
 		// load scripts
 		wp_enqueue_style('tiny-slider');
 		wp_enqueue_script('tiny-slider');
 
-		$defaultOptions = self::DEFAULT_OPTIONS;
-		$containerClass = uniqid('af-');
+		// get default options array
+		$defaultOptions = self::getDefaultOptions();
 
-		$options = shortcode_atts($defaultOptions, $attrs);
-
-		// remap
-		$mappedOptions = [];
-		foreach($options as $key => $val){
-			if(isset(self::OPTIONS_MAPPING[$key])){
-				if($val == 'true' || $val == 'false'){
-					$val = boolval($val);
-				}
-				else if(is_numeric($val)){
-					$val = floatval($val);
-				}
-				$mappedOptions[self::OPTIONS_MAPPING[$key]] = $val;
-			}
-		}
-
-		$mappedOptions['container'] = '.'.$containerClass;
+		$options = shortcode_atts($defaultOptions, $attrs, 'af-content-slider');
 		
-		$mappedOptions['controlsText'] = explode('|', trim($options['controls_text']));
-		$mappedOptions['autoplayText'] = explode('|', trim($options['autoplay_text']));
+		$mappedOptions = self::mapJsOptions($options);
+
+		$containerClass = uniqid('af-');
+		$mappedOptions['container'] = '.'.$containerClass;
 
 		$jsonOptions = json_encode($mappedOptions);
 
-		wp_add_inline_script('tiny-slider', <<<JS
-			tns($jsonOptions);
-		JS);
+		wp_add_inline_script('tiny-slider', "tns($jsonOptions);");
 
 		return <<<HTML
 			<div class="$containerClass">$content</div>
