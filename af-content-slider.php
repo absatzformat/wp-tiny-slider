@@ -21,8 +21,6 @@ define(__NAMESPACE__.'\MENU_SLUG',		PLUGIN_SLUG);
 
 final class ContentSlider{
 
-	private static $instance = null;
-
 	// shortcode attr => [js key, default value]
 	private const OPTIONS_MAPPING = [
 		'mode' =>							['mode',						'carousel'],
@@ -77,6 +75,7 @@ final class ContentSlider{
 		'nonce' => 							['nonce',						false]
 	];
 
+	private static $instance = null;
 	public static function getInstance(){
 
 		if(self::$instance === null){
@@ -92,10 +91,21 @@ final class ContentSlider{
 
 	private function __construct(){
 
-		wp_register_style('tiny-slider', PLUGIN_URL.'assets/css/tiny-slider.css');
-		wp_register_script('tiny-slider', PLUGIN_URL.'assets/js/tiny-slider.js', [], null, true);
+		if(!is_admin()){
 
-		add_shortcode('af-content-slider', [$this, 'handleShortcode']);
+			wp_register_style('tiny-slider', PLUGIN_URL.'assets/css/tiny-slider.css');
+			wp_register_script('tiny-slider', PLUGIN_URL.'assets/js/tiny-slider.js', [], null, true);
+
+			add_shortcode('af-content-slider', [$this, 'handleShortcode']);
+		}
+
+		// add_action('wp_enqueue_scripts', [$this, 'enqueueScripts']);
+	}
+
+	public function enqueueScripts(){
+
+		wp_enqueue_style('tiny-slider');
+		wp_enqueue_script('tiny-slider');
 	}
 
 	private static function getDefaultOptions(){
@@ -132,16 +142,18 @@ final class ContentSlider{
 	public function handleShortcode($attrs = [], $content = null){
 
 		// load scripts
-		wp_enqueue_style('tiny-slider');
-		wp_enqueue_script('tiny-slider');
+		$this->enqueueScripts();
 
 		// get default options array
 		$defaultOptions = self::getDefaultOptions();
 
+		// extend options
 		$options = shortcode_atts($defaultOptions, $attrs, 'af-content-slider');
-		
+
+		// map options
 		$mappedOptions = self::mapJsOptions($options);
 
+		// add container class
 		$containerClass = uniqid('af-');
 		$mappedOptions['container'] = '.'.$containerClass;
 
