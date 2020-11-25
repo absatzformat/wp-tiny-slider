@@ -93,13 +93,17 @@ final class ContentSlider{
 
 		if(!is_admin()){
 
-			wp_register_style('tiny-slider', PLUGIN_URL.'assets/css/tiny-slider.css');
-			wp_register_script('tiny-slider', PLUGIN_URL.'assets/js/tiny-slider.js', [], null, true);
-
+			add_action('wp_enqueue_scripts', [$this, 'registerScripts']);
 			add_shortcode('af-content-slider', [$this, 'handleShortcode']);
 		}
 
 		// add_action('wp_enqueue_scripts', [$this, 'enqueueScripts']);
+	}
+
+	public function registerScripts(){
+
+		wp_register_style('tiny-slider', PLUGIN_URL.'assets/css/tiny-slider.css');
+		wp_register_script('tiny-slider', PLUGIN_URL.'assets/js/tiny-slider.js', [], null, true);
 	}
 
 	public function enqueueScripts(){
