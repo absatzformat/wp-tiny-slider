@@ -1,28 +1,12 @@
 <?php
 
-/*
-	Plugin Name: Content Slider
-	Description: Content slider with Tiny Slider
-	Author: Absatzformat GmbH
-	Version: 1.0.0
-	Author URI: https://absatzformat.de
-*/
+namespace Absatzformat\Wordpress\TinySlider;
 
-namespace Absatzformat\Wordpress\ContentSlider;
-
-defined('WPINC') or die();
-
-define(__NAMESPACE__.'\PLUGIN_VERSION',	'1.0.0');
-define(__NAMESPACE__.'\PLUGIN_PATH',	plugin_dir_path(__FILE__));
-define(__NAMESPACE__.'\PLUGIN_URL',		plugin_dir_url(__FILE__));
-define(__NAMESPACE__.'\PLUGIN_SLUG',	pathinfo(__FILE__, PATHINFO_FILENAME));
-define(__NAMESPACE__.'\MENU_SLUG',		PLUGIN_SLUG);
-
-
-final class ContentSlider{
-
+final class TinySlider
+{
 	// shortcode attr => [js key, default value]
-	private const OPTIONS_MAPPING = [
+	/** @var array */
+	protected static $optionsMapping = [
 		'mode' =>							['mode',						'carousel'],
 		'axis' => 							['axis',						'horizontal'],
 		'items' =>							['items',						1],
@@ -75,67 +59,68 @@ final class ContentSlider{
 		'nonce' => 							['nonce',						false]
 	];
 
-	private static $instance = null;
-	public static function getInstance(){
+	protected static $shortcodeName = 'wp-tiny-slider';
 
-		if(self::$instance === null){
+	/** @var null|TinySlider */
+	protected static $instance = null;
+
+	public static function getInstance(): self
+	{
+		if (self::$instance === null) {
 			self::$instance = new self();
 		}
 
 		return self::$instance;
 	}
 
-	public static function init(){
-		return self::getInstance();
-	}
-
-	private function __construct(){
-
-		if(!is_admin()){
+	protected function __construct()
+	{
+		if (!is_admin()) {
 
 			add_action('wp_enqueue_scripts', [$this, 'registerScripts']);
-			add_shortcode('af-content-slider', [$this, 'handleShortcode']);
+			add_shortcode(self::$shortcodeName, [$this, 'handleShortcode']);
 		}
-
-		// add_action('wp_enqueue_scripts', [$this, 'enqueueScripts']);
 	}
 
-	public function registerScripts(){
+	public function registerScripts(): void
+	{
+		$pluginUrl = plugin_dir_url(__DIR__ . '/../..');
 
-		wp_register_style('tiny-slider', PLUGIN_URL.'assets/css/tiny-slider.css');
-		wp_register_script('tiny-slider', PLUGIN_URL.'assets/js/tiny-slider.js', [], null, true);
+		wp_register_style('tiny-slider', $pluginUrl . 'assets/css/tiny-slider.css');
+		wp_register_script('tiny-slider', $pluginUrl . 'assets/js/tiny-slider.js', [], null, true);
 	}
 
-	public function enqueueScripts(){
-
+	public function enqueueScripts(): void
+	{
 		wp_enqueue_style('tiny-slider');
 		wp_enqueue_script('tiny-slider');
 	}
 
-	private static function getDefaultOptions(){
-		return array_map(function($mapping){
+	protected static function getDefaultOptions(): array
+	{
+		return array_map(function ($mapping) {
 			return $mapping[1];
-		}, self::OPTIONS_MAPPING);
+		}, self::$optionsMapping);
 	}
 
-	private static function mapJsOptions($options){
+	protected static function mapJsOptions($options): array
+	{
 
 		$mappedOptions = [];
-		foreach(self::OPTIONS_MAPPING as $key => $mapping){
+		foreach (self::$optionsMapping as $key => $mapping) {
 
 			$val = $options[$key];
 
 			// lazy casting
-			if($val === 'true' || $val === 'false'){
+			if ($val === 'true' || $val === 'false') {
 				$val = $val === 'true';
-			}
-			else if(is_numeric($val)){
+			} else if (is_numeric($val)) {
 				$val = floatval($val);
 			}
 
 			$mappedOptions[$mapping[0]] = $val;
 		}
-		
+
 		// handle array options
 		$mappedOptions['controlsText'] = explode('|', trim($mappedOptions['controlsText']));
 		$mappedOptions['autoplayText'] = explode('|', trim($mappedOptions['autoplayText']));
@@ -143,8 +128,8 @@ final class ContentSlider{
 		return $mappedOptions;
 	}
 
-	public function handleShortcode($attrs = [], $content = null){
-
+	public function handleShortcode($attrs = [], $content = null): string
+	{
 		// load scripts
 		$this->enqueueScripts();
 
@@ -152,23 +137,19 @@ final class ContentSlider{
 		$defaultOptions = self::getDefaultOptions();
 
 		// extend options
-		$options = shortcode_atts($defaultOptions, $attrs, 'af-content-slider');
+		$options = shortcode_atts($defaultOptions, $attrs, self::$shortcodeName);
 
 		// map options
 		$mappedOptions = self::mapJsOptions($options);
 
 		// add container class
-		$containerClass = uniqid('af-');
-		$mappedOptions['container'] = '.'.$containerClass;
+		$containerClass = uniqid('wp-tiny-slider-');
+		$mappedOptions['container'] = '.' . $containerClass;
 
 		$jsonOptions = json_encode($mappedOptions);
 
 		wp_add_inline_script('tiny-slider', "tns($jsonOptions);");
 
-		return <<<HTML
-			<div class="$containerClass">$content</div>
-		HTML;
+		return '<div class="' . $containerClass . '">' . $content . '</div>';
 	}
 }
-
-ContentSlider::init();
